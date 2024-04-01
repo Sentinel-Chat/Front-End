@@ -1,38 +1,121 @@
 .App {
-  text-align: center;
-}
+    font-family:Avenir, "Century Gothic", sans-serif;
+    font-weight:100; 
+    font-style:normal;
+    font-size: calc(10px + 1vmin);
+    /* color: white; */
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    
+    background-color: rgb(234, 240, 237);
+    height: 100px;
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
   }
-}
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
+  .nav-bar {
+    top: 0;
+    left: 0;
+    width: 100vw;
 
-.App-link {
-  color: #61dafb;
-}
+    background-color: #000000;
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+    font-size: 25px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
   }
-  to {
-    transform: rotate(360deg);
+
+  .nav-title {
+    padding-left: 50px;
   }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style-type: none;
+    padding-right: 50px;
+    margin: 0;
+  }
+
+  
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    color:white;
+    cursor: pointer;
+    transition:  0.3s;
+  }
+  button:hover {
+    color: black;
+    background-color: #b5d559;
+  }
+
+  a:any-link {
+    color: #89a042;
+    text-decoration-line: none;
+    cursor: auto;
+}
+
+a:any-link:hover {
+    color: #b6c099;
+    text-decoration-line: none;
+    cursor: auto;
+}
+
+.login-link {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: black;
+    padding: 0.7em;
+    border-radius: 10px;
+    background-color: #b5d559;
+    transition: 0.4s;
+}
+
+.login-link:hover {
+    color: black;
+    padding: 0.7em;
+    border-radius: 10px;
+    background-color: #859c40;
+    cursor: pointer;
+}
+
+span {
+    color: red;
+}
+
+  .title {
+    color: white;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .margin-zero {
+    margin-bottom: 5px;
+  }
+
+  .row-align {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
