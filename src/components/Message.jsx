@@ -13,9 +13,7 @@ const Message = (props) => {
   return (
     <div className={"Message" + " " + props.type}>
       <div className="bubble-container">
-        <div className="bubble">
-          <p>{props.text}</p>
-        </div>
+        <div className="bubble">{props.text}</div>
       </div>
 
       <div className={"timestamp" + " " + props.type}>
