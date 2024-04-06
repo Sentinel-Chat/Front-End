@@ -1,20 +1,93 @@
 import React from "react";
 import "./Inbox.css";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
-import Message from "../components/Message";
+import profile_pic from "../images/icon.jpeg";
 
+import Message from "../components/Message";
 const Inbox = (props) => {
+  const messageEl = useRef(null);
+
+  useEffect(() => {
+    if (messageEl) {
+      messageEl.current.addEventListener("DOMNodeInserted", (event) => {
+        const { currentTarget: target } = event;
+        target.scroll({ top: target.scrollHeight, behavior: "smooth" });
+      });
+    }
+  }, []);
+
   return (
     <div className="Inbox">
-      <div className="inbox-sidebar">
-        {" "}
-        <h1>hello</h1>
+      <div className="inbox-sidebar scrollable">
+        <div className="dm-listing">
+          <div className="dm-pic">
+            <img src={profile_pic} alt="user icon" />
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>{" "}
+        <div className="dm-listing">
+          <div className="dm-pic" alt="user icon">
+            <img src={profile_pic} alt="user icon" />{" "}
+          </div>
+          <div>
+            <h3 className="dm-name">Kevin</h3>
+            <p className="dm-preview">How are you today?</p>
+          </div>
+        </div>
       </div>
       <div className="inbox-content">
-        <div className="message-list-container scrollable">
+        <div className="message-list-container scrollable" ref={messageEl}>
           <div className="large-timestamp">
             Wednesday, April 3, 2024 8:37 PM
           </div>
@@ -33,30 +106,6 @@ const Inbox = (props) => {
 
           <Message
             text="Nice to meet you!"
-            type="mine"
-            position="first"
-            timestamp="8:44 PM"
-          ></Message>
-          <Message
-            text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi blandit cursus risus at ultrices mi tempus. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nibh tortor id aliquet lectus proin nibh nisl condimentum id. Vitae elementum curabitur vitae nunc sed velit dignissim sodales. Suscipit tellus mauris a diam. Et egestas quis ipsum suspendisse ultrices gravida dictum fusce. Suspendisse in est ante in nibh mauris cursus mattis molestie. Nunc consequat interdum varius sit amet mattis vulputate enim. Egestas dui id ornare arcu odio ut sem. Elit ut aliquam purus sit amet luctus venenatis lectus magna. Dignissim sodales ut eu sem. Mus mauris vitae ultricies leo integer malesuada nunc vel risus. Non tellus orci ac auctor augue mauris augue neque. Dui ut ornare lectus sit amet est placerat in. Tempus urna et pharetra pharetra massa massa ultricies mi. Nibh tellus molestie nunc non. Et ligula ullamcorper malesuada proin libero. Quis risus sed vulputate odio ut enim blandit volutpat."
-            type="mine"
-            position="last"
-            timestamp="8:44 PM"
-          ></Message>
-          <Message
-            text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi blandit cursus risus at ultrices mi tempus. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nibh tortor id aliquet lectus proin nibh nisl condimentum id. Vitae elementum curabitur vitae nunc sed velit dignissim sodales. Suscipit tellus mauris a diam. Et egestas quis ipsum suspendisse ultrices gravida dictum fusce. Suspendisse in est ante in nibh mauris cursus mattis molestie. Nunc consequat interdum varius sit amet mattis vulputate enim. Egestas dui id ornare arcu odio ut sem. Elit ut aliquam purus sit amet luctus venenatis lectus magna. Dignissim sodales ut eu sem. Mus mauris vitae ultricies leo integer malesuada nunc vel risus. Non tellus orci ac auctor augue mauris augue neque. Dui ut ornare lectus sit amet est placerat in. Tempus urna et pharetra pharetra massa massa ultricies mi. Nibh tellus molestie nunc non. Et ligula ullamcorper malesuada proin libero. Quis risus sed vulputate odio ut enim blandit volutpat."
-            type="mine"
-            position="last"
-            timestamp="8:44 PM"
-          ></Message>
-          <Message
-            text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi blandit cursus risus at ultrices mi tempus. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nibh tortor id aliquet lectus proin nibh nisl condimentum id. Vitae elementum curabitur vitae nunc sed velit dignissim sodales. Suscipit tellus mauris a diam. Et egestas quis ipsum suspendisse ultrices gravida dictum fusce. Suspendisse in est ante in nibh mauris cursus mattis molestie. Nunc consequat interdum varius sit amet mattis vulputate enim. Egestas dui id ornare arcu odio ut sem. Elit ut aliquam purus sit amet luctus venenatis lectus magna. Dignissim sodales ut eu sem. Mus mauris vitae ultricies leo integer malesuada nunc vel risus. Non tellus orci ac auctor augue mauris augue neque. Dui ut ornare lectus sit amet est placerat in. Tempus urna et pharetra pharetra massa massa ultricies mi. Nibh tellus molestie nunc non. Et ligula ullamcorper malesuada proin libero. Quis risus sed vulputate odio ut enim blandit volutpat."
-            type="mine"
-            position="last"
-            timestamp="8:44 PM"
-          ></Message>
-          <Message
-            text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi blandit cursus risus at ultrices mi tempus. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nibh tortor id aliquet lectus proin nibh nisl condimentum id. Vitae elementum curabitur vitae nunc sed velit dignissim sodales. Suscipit tellus mauris a diam. Et egestas quis ipsum suspendisse ultrices gravida dictum fusce. Suspendisse in est ante in nibh mauris cursus mattis molestie. Nunc consequat interdum varius sit amet mattis vulputate enim. Egestas dui id ornare arcu odio ut sem. Elit ut aliquam purus sit amet luctus venenatis lectus magna. Dignissim sodales ut eu sem. Mus mauris vitae ultricies leo integer malesuada nunc vel risus. Non tellus orci ac auctor augue mauris augue neque. Dui ut ornare lectus sit amet est placerat in. Tempus urna et pharetra pharetra massa massa ultricies mi. Nibh tellus molestie nunc non. Et ligula ullamcorper malesuada proin libero. Quis risus sed vulputate odio ut enim blandit volutpat."
             type="mine"
             position="last"
             timestamp="8:44 PM"
