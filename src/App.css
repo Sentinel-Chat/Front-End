@@ -1,8 +1,12 @@
+/* * {
+    padding: 0;
+    margin: 0;
+} */
 .App {
     font-family:Avenir, "Century Gothic", sans-serif;
     font-weight:100; 
     font-style:normal;
-    font-size: calc(10px + 1vmin);
+    font-size: 12px; /*calc(10px + 1vmin); */
     /* color: white; */
     justify-content: center;
     display: flex;

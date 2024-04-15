@@ -4,7 +4,7 @@
 }
 
 .Message .bubble-container {
-    font-size: 15px;
+    font-size: 16px;
     display: flex;
 }
 
@@ -48,6 +48,17 @@
 }
 
 .timestamp p {
+    font-size: 15px;
     padding: 0;
     margin: 0;
 }
+
+.large-timestamp {
+    display: flex;
+    justify-content: center;
+    color: #999;
+    font-weight: 800;
+    font-size: 15px;
+    margin: 10px 0;
+    text-transform: uppercase;
+    }
