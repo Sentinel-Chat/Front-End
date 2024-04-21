@@ -1,14 +1,33 @@
 import React from "react";
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Link, useRoutes } from "react-router-dom";
+import socketIOClient from "socket.io-client";
 
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Inbox from "./pages/Inbox";
+import Message from "./components/Message";
+
+// replace 'YOUR_IP_ADDRESS' with server IP
+const ENDPOINT = "http://192.168.254.12:5000";
 
 const App = () => {
+  const [socket, setSocket] = useState(null);
+
+  // establish connection to server
+  useEffect(() => {
+    const socket = socketIOClient(ENDPOINT);
+    console.log("Socket connected:", socket);
+    setSocket(socket);
+
+    return () => {
+      socket.disconnect();
+      console.log("Socket disconnected");
+    };
+  }, []);
+
   // Use to check if user logged in or not
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -25,6 +44,10 @@ const App = () => {
 
     // Set logged in user data passed from Login.jsx
     setLoggedInUser(data);
+
+    if (socket) {
+      socket.emit("login", data); // send messsage to server when user is logged in
+    }
   };
 
   // Declare React Router pages to be used
