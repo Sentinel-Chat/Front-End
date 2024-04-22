@@ -8,7 +8,7 @@ import socketIOClient from "socket.io-client";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Inbox from "./pages/Inbox";
-import Message from "./components/Message";
+// import Message from "./components/Message";
 
 // replace 'YOUR_IP_ADDRESS' with server IP
 const ENDPOINT = "http://192.168.254.12:5000";

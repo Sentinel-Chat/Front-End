@@ -9,7 +9,7 @@ const SignUp = () => {
 
   // New user data
   const [credentials, setCredentials] = useState({
-    id: "",
+    username: "",
     password: "",
   });
 
@@ -29,22 +29,40 @@ const SignUp = () => {
     console.log(credentials);
   };
 
-  // Create new entry in database and return to Login page
   const handleSignUp = async (event) => {
     event.preventDefault();
-    if (credentials.id !== "" && credentials.password !== "") {
-      if (credentials.password === passwordCheck) {
-        try {
-          // Create new entry in database
-          navigate("/");
-        } catch (error) {
-          console.log("error on creating account", error);
-        }
+
+    // Validate that id and password are not empty
+    if (!credentials.username || !credentials.password) {
+      alert("Username and password are required.");
+      return;
+    }
+
+    // Validate that passwords match
+    if (credentials.password !== passwordCheck) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://192.168.254.12:5000/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials), // Convert object to JSON string
+      });
+
+      if (response.ok) {
+        // User created successfully, navigate to login page
+        navigate("/");
       } else {
-        alert("Passwords do not match.");
+        const data = await response.json();
+        alert(data.error || "Failed to create user");
       }
-    } else {
-      alert("Fields cannot be empty.");
+    } catch (error) {
+      console.log("Error creating account:", error);
+      alert("Error creating account. Please try again later.");
     }
   };
 
@@ -55,8 +73,8 @@ const SignUp = () => {
       <form className="input-form">
         <input
           type="text"
-          id="id"
-          name="id"
+          id="username"
+          name="username"
           placeholder="Username"
           value={credentials.username}
           onChange={handleChange}
