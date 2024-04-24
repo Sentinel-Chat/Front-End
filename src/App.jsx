@@ -45,8 +45,12 @@ const App = () => {
     // Set logged in user data passed from Login.jsx
     setLoggedInUser(data);
 
-    if (socket) {
+    if (!authenticated && socket) {
       socket.emit("login", data); // send messsage to server when user is logged in
+    }
+
+    if (authenticated && socket) {
+      //   socket.emit("logout", data); // send message to server when user is logged out
     }
   };
 
@@ -85,7 +89,9 @@ const App = () => {
               <li>
                 {/* Link to account information page */}
                 {/* <Link to={"/inbox/account/" + loggedInUser.id}> */}
-                <h6 className="login-link">View Account: {loggedInUser.id}</h6>
+                <h6 className="login-link">
+                  Logged in as: {loggedInUser.username}
+                </h6>
                 {/* </Link> */}
               </li>
               <li>

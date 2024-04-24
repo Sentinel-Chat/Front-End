@@ -14,17 +14,54 @@ const Login = (props) => {
   const handleLogin = async (event) => {
     event.preventDefault();
 
-    if (loginInfo.username !== "") {
-      // Check if password matches password in database
-      if (true) {
-        // Get account data from database
+    // Validate that id and password are not empty
+    if (!loginInfo.username || !loginInfo.password) {
+      alert("Username and password are required.");
+      return;
+    }
 
-        // call manageSession() function from App.jsx
-        // props.loginUser(fetchedLogin.data.getAccount);
-        navigate("/Inbox");
+    try {
+      const response = await fetch("http://192.168.254.12:5000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginInfo), // Convert object to JSON string
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        // Check if the response contains account information
+        if (data.account == null) {
+          // Check if the entered password matches the password from the database
+          if (loginInfo.password === data.password) {
+            // Passwords match, navigate to the inbox page
+            // call manageSession() function from App.jsx
+            console.log("works until here");
+
+            const fetchedData = {
+              username: data.username,
+              password: data.password,
+            };
+
+            props.loginUser(fetchedData);
+
+            navigate("/Inbox");
+          } else {
+            // Passwords don't match
+            alert("Incorrect password.");
+          }
+        } else {
+          // Account not found
+          alert("Account not found.");
+        }
       } else {
-        alert("Incorrect Credentials! Please try again.");
+        // Server error
+        alert("Error retrieving account. Please try again later.");
       }
+    } catch (error) {
+      //   console.log("Error creating account:", error);
+      alert("Error retrieving account. Please try again later.");
     }
   };
 

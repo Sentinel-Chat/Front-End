@@ -49,7 +49,7 @@ const Inbox = (props) => {
     });
 
     return () => {
-      newSocket.disconnect();
+      //   newSocket.disconnect();
     };
   }, [messages]);
 
