@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 const Login = (props) => {
   // User Login information
   const [loginInfo, setLoginInfo] = useState({
-    id: "",
+    username: "",
     password: "",
   });
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const Login = (props) => {
     }
 
     try {
-      const response = await fetch("http://192.168.254.12:5000/api/login", {
+      const response = await fetch("http://172.20.10.2:5000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

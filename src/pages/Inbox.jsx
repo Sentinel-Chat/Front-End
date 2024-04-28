@@ -39,7 +39,7 @@ const Inbox = (props) => {
 
   // Replace SERVER_IP with server ip
   useEffect(() => {
-    const newSocket = io("http://192.168.254.12:5000");
+    const newSocket = io("http://172.20.10.2:5000");
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {

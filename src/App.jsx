@@ -11,7 +11,7 @@ import Inbox from "./pages/Inbox";
 // import Message from "./components/Message";
 
 // replace 'YOUR_IP_ADDRESS' with server IP
-const ENDPOINT = "http://192.168.254.12:5000";
+const ENDPOINT = "http://172.20.10.2:5000";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
@@ -37,7 +37,7 @@ const App = () => {
     password: "",
   });
 
-  // Login/Signout user
+  // Login user
   const manageSession = (data) => {
     // Login/Signout user
     setAuthenticated(!authenticated);
@@ -46,12 +46,26 @@ const App = () => {
     setLoggedInUser(data);
 
     if (!authenticated && socket) {
-      socket.emit("login", data); // send messsage to server when user is logged in
+      socket.emit("login", data);
     }
 
-    if (authenticated && socket) {
-      //   socket.emit("logout", data); // send message to server when user is logged out
+    if (authenticated) {
+      socket.emit("logout", data); // send message to server when user is logged out
     }
+  };
+
+  // Signout user
+  const logOut = () => {
+    // Login/Signout user
+    setAuthenticated(!authenticated);
+
+    socket.emit("logout", loggedInUser); // send message to server when user is logged out
+
+    // Set logged in user data passed from Login.jsx
+    setLoggedInUser({
+      username: "",
+      password: "",
+    });
   };
 
   // Declare React Router pages to be used
@@ -77,9 +91,9 @@ const App = () => {
       {/* Navbar */}
       <div className="nav-bar">
         <div className="nav-title">
-          <Link to="inbox">
-            <h5>Sentinel-Chat</h5>
-          </Link>
+          {/* <Link to="inbox"> */}
+          <h5>Sentinel-Chat</h5>
+          {/* </Link> */}
         </div>
 
         <ul className="nav-links">
@@ -96,7 +110,7 @@ const App = () => {
               </li>
               <li>
                 <Link to="/">
-                  <h6 className="login-link" onClick={manageSession}>
+                  <h6 className="login-link" onClick={logOut}>
                     Logout
                   </h6>
                 </Link>
