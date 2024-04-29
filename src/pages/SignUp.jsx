@@ -54,8 +54,9 @@ const SignUp = () => {
       });
 
       if (response.ok) {
+        addUserToChatroom(credentials.username, 1);
         // User created successfully, navigate to login page
-        navigate("/");
+        // navigate("/");
       } else {
         const data = await response.json();
         alert(data.error || "Failed to create user");
@@ -65,6 +66,42 @@ const SignUp = () => {
       alert("Error creating account. Please try again later.");
     }
   };
+
+  async function addUserToChatroom(username, chatRoomId) {
+    const url = "http://172.20.10.2:5000/api/add_user_to_chatroom";
+
+    try {
+      // Data to be sent in the request body
+      const data = {
+        username: username,
+        chat_room_id: chatRoomId,
+      };
+
+      // Options for the Fetch API
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      };
+
+      // Make the POST request to the Flask server
+      const response = await fetch(url, options);
+      const responseData = await response.json();
+
+      if (response.ok) {
+        console.log("User added to chatroom successfully");
+        navigate("/");
+      } else {
+        console.error("Failed to add user to chatroom:", responseData.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      return false;
+    }
+  }
 
   return (
     <div className="SignUp">

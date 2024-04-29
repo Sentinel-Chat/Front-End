@@ -22,6 +22,8 @@ const App = () => {
     console.log("Socket connected:", socket);
     setSocket(socket);
 
+    createChatroomIfNotExists();
+
     return () => {
       socket.disconnect();
       console.log("Socket disconnected");
@@ -67,6 +69,46 @@ const App = () => {
       password: "",
     });
   };
+
+  async function createChatroomIfNotExists() {
+    // URL of the Flask endpoint that handles the creation of chatrooms
+    const url = "http://172.20.10.2:5000/api/create_chatroom";
+
+    // Data to be sent in the request body
+    const data = {
+      chat_room_id: 1,
+      created_at: new Date().toLocaleString([], {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      nickname: "General",
+    };
+
+    // Options for the Fetch API
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+
+    try {
+      // Make the POST request to the Flask server
+      const response = await fetch(url, options);
+      if (response.ok) {
+        console.log("Chatroom created successfully or already exists.");
+      } else {
+        console.error("Failed to create chatroom.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
 
   // Declare React Router pages to be used
   let element = useRoutes([
