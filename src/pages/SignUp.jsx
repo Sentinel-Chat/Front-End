@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { ENDPOINT } from "../config.js";
+
 const SignUp = () => {
   const navigate = useNavigate();
 
@@ -45,7 +47,7 @@ const SignUp = () => {
     }
 
     try {
-      const response = await fetch("http://172.20.10.2:5000/api/signup", {
+      const response = await fetch(`${ENDPOINT}/api/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +70,7 @@ const SignUp = () => {
   };
 
   async function addUserToChatroom(username, chatRoomId) {
-    const url = "http://172.20.10.2:5000/api/add_user_to_chatroom";
+    const url = `${ENDPOINT}/api/add_user_to_chatroom`;
 
     try {
       // Data to be sent in the request body

@@ -8,6 +8,8 @@ import { useEffect, useState, useRef } from "react";
 
 // import profile_pic from "../images/icon.jpeg";
 
+import { ENDPOINT } from "../config.js";
+
 import Message from "../components/Message";
 
 const Inbox = (props) => {
@@ -37,7 +39,7 @@ const Inbox = (props) => {
       });
     }
 
-    const newSocket = io("http://172.20.10.2:5000");
+    const newSocket = io(`${ENDPOINT}`);
     setSocket(newSocket);
 
     getChatroomsWithUser(props.username);
@@ -80,7 +82,7 @@ const Inbox = (props) => {
 
   async function getChatroomById(chatroomId) {
     // URL of the Flask endpoint that retrieves a chatroom by ID
-    const url = `http://172.20.10.2:5000/api/get_chatroom_by_id`;
+    const url = `${ENDPOINT}/api/get_chatroom_by_id`;
 
     try {
       // Make the GET request to the Flask server
@@ -100,7 +102,7 @@ const Inbox = (props) => {
 
   async function getMessagesByChatroomId(chatroomId) {
     // URL of the Flask endpoint that retrieves messages by chatroom ID
-    const url = `http://172.20.10.2:5000/api/get_messages_by_chatroom_id`;
+    const url = `${ENDPOINT}/api/get_messages_by_chatroom_id`;
 
     try {
       // Data to be sent in the request body
@@ -133,7 +135,7 @@ const Inbox = (props) => {
   }
 
   async function getChatroomsWithUser(username) {
-    const url = "http://172.20.10.2:5000/api/get_chatroomsWithUser";
+    const url = `${ENDPOINT}/api/get_chatroomsWithUser`;
 
     try {
       // Data to be sent in the request body
@@ -177,7 +179,7 @@ const Inbox = (props) => {
 
   // Replace SERVER_IP with server ip
   useEffect(() => {
-    const newSocket = io("http://172.20.10.2:5000");
+    const newSocket = io(`${ENDPOINT}`);
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
@@ -239,7 +241,7 @@ const Inbox = (props) => {
 
   const insertMessage = async (newMessage) => {
     // URL of the Flask endpoint that inserts a new message
-    const url = "http://172.20.10.2:5000/api/insert_message";
+    const url = `${ENDPOINT}/api/insert_message`;
 
     try {
       // Make the POST request to the Flask server
@@ -271,7 +273,7 @@ const Inbox = (props) => {
       minute: "2-digit", // Display two-digit minute (e.g., 05)
     });
     // URL of the Flask endpoint that handles the creation of chatrooms
-    const url = "http://172.20.10.2:5000/api/create_chatroom";
+    const url = `${ENDPOINT}/api/create_chatroom`;
 
     // Data to be sent in the request body
     const data = {

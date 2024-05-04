@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./Login.css";
 import { Link, useNavigate } from "react-router-dom";
 
+import { ENDPOINT } from "../config.js";
+
 const Login = (props) => {
   // User Login information
   const [loginInfo, setLoginInfo] = useState({
@@ -21,7 +23,7 @@ const Login = (props) => {
     }
 
     try {
-      const response = await fetch("http://172.20.10.2:5000/api/login", {
+      const response = await fetch(`${ENDPOINT}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

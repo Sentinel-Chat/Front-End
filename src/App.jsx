@@ -8,10 +8,8 @@ import socketIOClient from "socket.io-client";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Inbox from "./pages/Inbox";
-// import Message from "./components/Message";
 
-// replace 'YOUR_IP_ADDRESS' with server IP
-const ENDPOINT = "http://172.20.10.2:5000";
+import { ENDPOINT } from "./config.js";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
@@ -72,7 +70,7 @@ const App = () => {
 
   async function createChatroomIfNotExists() {
     // URL of the Flask endpoint that handles the creation of chatrooms
-    const url = "http://172.20.10.2:5000/api/create_chatroom";
+    const url = `${ENDPOINT}/api/create_chatroom`;
 
     // Data to be sent in the request body
     const data = {
