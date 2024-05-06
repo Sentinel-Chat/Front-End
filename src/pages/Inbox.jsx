@@ -27,6 +27,9 @@ const Inbox = (props) => {
   // State to store current chatroom
   const [chatroomData, setChatroomData] = useState(null);
 
+  const fileInput = useRef(null);
+
+
   //State to store socket instance
   const [socket, setSocket] = useState(null);
 
@@ -177,27 +180,37 @@ const Inbox = (props) => {
     setMessageInput(input);
   };
 
-  // Replace SERVER_IP with server ip
   useEffect(() => {
     const newSocket = io(`${ENDPOINT}`);
     setSocket(newSocket);
 
-    newSocket.on("message", (message) => {
-      const updatedMessages = [...messages, message];
-      setMessages(updatedMessages);
-      console.log(updatedMessages);
-    });
-
     return () => {
-      //   newSocket.disconnect();
+      if (newSocket) {
+        newSocket.disconnect();
+      }
     };
-  }, [messages]);
+  }, []);
+
+  useEffect(() => {
+    const newSocket = io(`${ENDPOINT}`);
+    setSocket(newSocket);
+  
+    newSocket.on("message", (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+  
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+  
+  
 
   // Stores form data when user inputs data
   const handleSubmit = async () => {
     // event.preventDefault();
 
-    if (messageInput.trim() !== "") {
+    if (messageInput.trim() !== "" || fileInput.current.files.length > 0) {
       const createdAt = new Date().toLocaleString([], {
         weekday: "long", // Display full weekday name (e.g., Monday)
         year: "numeric", // Display full numeric year (e.g., 2024)
@@ -206,9 +219,10 @@ const Inbox = (props) => {
         hour: "2-digit", // Display two-digit hour (e.g., 08)
         minute: "2-digit", // Display two-digit minute (e.g., 05)
       });
+
       // Create a new message object
       const newMessage = {
-        text: messageInput,
+        text: messageInput.trim(),
         sender: props.user.username,
         created_at: createdAt,
         chat_room_id: chatroomID,
@@ -221,21 +235,26 @@ const Inbox = (props) => {
         socket.emit("message", newMessage);
       }
 
-      // Get chatroom id from database (stretch)
-      // inert message into database (stretch goal)
+      insertMessage(newMessage).then((messageId) => {
+        // If a file is attached, upload the file
+        if (fileInput.current.files.length > 0) {
+          const file = fileInput.current.files[0];
+          insertFile(file, messageId);
+        }
+        
+        // Clear the message input and file input
+        setMessageInput("");
+        fileInput.currentValue = "";
+        
+        // Clear the input field
+        document.querySelector(".compose-input").value = "";
 
-      // Update the messages state with the new message
-      setMessages([...messages, newMessage]);
-
-      insertMessage(newMessage);
-
-      // Clear the message input
-      setMessageInput("");
-
-      // Clear the input field
-      document.querySelector(".compose-input").value = "";
+      })
+      .catch((error) => {
+        console.error("Error inserting message: ", error);
+      });
     } else {
-      alert("Message input isempty.");
+      alert("Message input is empty.");
     }
   };
 
@@ -261,6 +280,33 @@ const Inbox = (props) => {
     } catch (error) {
       console.error("Error:", error);
     }
+  };
+
+  // Function to insert file into db
+  const insertFile = async (file, messageId) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("messageId", messageId);
+
+      const response = await fetch(`${ENDPOINT}/api/insert_file`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if(response.ok) {
+        console.log("File inserted successfully.");
+      }
+
+      else {
+        console.error("Failed to insert File");
+      }
+    } 
+
+    catch (error) {
+      console.error("Error:", error);
+    }
+    
   };
 
   const createChatroom = async () => {
@@ -350,6 +396,11 @@ const Inbox = (props) => {
             onChange={(inputString) => {
               handleChange(inputString);
             }}
+          />
+          <input
+            type="file"
+            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
+            ref={fileInput}
           />
           <h2
             className="send"
