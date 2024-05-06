@@ -11,6 +11,7 @@ import { useEffect, useState, useRef } from "react";
 import { ENDPOINT } from "../config.js";
 
 import Message from "../components/Message";
+import CreateChatroomModal from "../components/CreateChatroomModal";
 
 const Inbox = (props) => {
   const messageEl = useRef(null);
@@ -27,6 +28,8 @@ const Inbox = (props) => {
   // State to store current chatroom
   const [chatroomData, setChatroomData] = useState(null);
 
+  const [chatroomList, setChatroomList] = useState(null);
+
   //State to store socket instance
   const [socket, setSocket] = useState(null);
 
@@ -42,10 +45,10 @@ const Inbox = (props) => {
     const newSocket = io(`${ENDPOINT}`);
     setSocket(newSocket);
 
-    getChatroomsWithUser(props.username);
-
     // const fetchedChatRoom = getChatroomById(chatroomID);
     // setChatroomData(fetchedChatRoom);
+
+    getChatroomsWithUser(props.user.username);
 
     getMessagesByChatroomId(chatroomID)
       .then((fetchedMessages) => {
@@ -159,7 +162,8 @@ const Inbox = (props) => {
       if (response.ok) {
         // Extract chatrooms from the response data
         const chatrooms = responseData.chatrooms;
-        // console.log("Chatrooms:", chatrooms);
+        console.log("Chatrooms:", chatrooms);
+        setChatroomList(chatrooms);
         return chatrooms;
       } else {
         console.error("Failed to fetch chatrooms:", responseData.error);
@@ -263,69 +267,52 @@ const Inbox = (props) => {
     }
   };
 
-  const createChatroom = async () => {
-    const createdAt = new Date().toLocaleString([], {
-      weekday: "long", // Display full weekday name (e.g., Monday)
-      year: "numeric", // Display full numeric year (e.g., 2024)
-      month: "long", // Display full month name (e.g., April)
-      day: "numeric", // Display numeric day of the month (e.g., 27)
-      hour: "2-digit", // Display two-digit hour (e.g., 08)
-      minute: "2-digit", // Display two-digit minute (e.g., 05)
-    });
-    // URL of the Flask endpoint that handles the creation of chatrooms
-    const url = `${ENDPOINT}/api/create_chatroom`;
-
-    // Data to be sent in the request body
-    const data = {
-      created_at: createdAt, // Example creation date
-      nickname: "General",
-    };
-
-    // Options for the Fetch API
-    const options = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
-
-    // Make the POST request to the Flask server
-    fetch(url, options)
-      .then((response) => {
-        if (response.ok) {
-          console.log("Chatroom created successfully.");
-        } else {
-          console.error("Failed to create chatroom.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+  // Function to handle click on dm-listing div
+  const handleChatroomClick = async (chatroomId) => {
+    // Fetch messages for the clicked chatroom
+    const fetchedMessages = await getMessagesByChatroomId(chatroomId);
+    if (fetchedMessages.messages) {
+      const messagesArray = fetchedMessages.messages;
+      const uniqueMessages = removeDuplicates(messagesArray, "text");
+      setMessages(uniqueMessages);
+    } else {
+      console.error("No messages found.");
+    }
+    // Set the selected chatroom ID
+    setChatroomID(chatroomId);
   };
 
   return (
     <div className="Inbox">
-      {/* <div className="inbox-sidebar scrollable">
-        <div className="dm-listing">
-          <div className="dm-pic">
-            <img src={profile_pic} alt="user icon" />
-          </div>
-          <div>
-            <h3 className="dm-name">Kevin</h3>
-            <p className="dm-preview">How are you today?</p>
-          </div>
+      <div className="inbox-sidebar scrollable">
+        <div>
+          <CreateChatroomModal
+            user={props.user.username}
+            refreshChatRoomList={getChatroomsWithUser}
+          />
         </div>
-        <div className="dm-listing">
-          <div className="dm-pic" alt="user icon">
-            <img src={profile_pic} alt="user icon" />{" "}
-          </div>
-          <div>
-            <h3 className="dm-name">Joseph</h3>
-            <p className="dm-preview">What did you think of the Exam?</p>
-          </div>
-        </div>
-      </div> */}
+
+        {chatroomList &&
+          chatroomList.map((chatroom, index) => (
+            <div
+              key={index}
+              className={`dm-listing ${
+                chatroomID === chatroom[0] ? "selected" : ""
+              }`}
+              onClick={() => handleChatroomClick(chatroom[0])}
+              style={{ background: chatroomID === chatroom[0] ? "grey" : "" }}
+              id={chatroom[0]}
+            >
+              <div className="dm-pic">
+                {/* <img src={profile_pic} alt="user icon" /> */}
+              </div>
+              <div>
+                <h3 className="dm-name">{chatroom[2]}</h3>
+                <p className="dm-preview">Placeholder preview message</p>
+              </div>
+            </div>
+          ))}
+      </div>
       <div className="inbox-content">
         <div className="message-list-container scrollable" ref={messageEl}>
           {/* <div className="large-timestamp">
