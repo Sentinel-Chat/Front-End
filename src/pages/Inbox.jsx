@@ -187,15 +187,13 @@ const Inbox = (props) => {
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
-      const updatedMessages = [...messages, message];
-      setMessages(updatedMessages);
-      console.log(updatedMessages);
+      setMessages((prevMessages) => [...prevMessages, message]);
     });
 
     return () => {
-      //   newSocket.disconnect();
+      newSocket.disconnect();
     };
-  }, [messages]);
+  }, []);
 
   // Stores form data when user inputs data
   const handleSubmit = async () => {
@@ -229,7 +227,7 @@ const Inbox = (props) => {
       // inert message into database (stretch goal)
 
       // Update the messages state with the new message
-      setMessages([...messages, newMessage]);
+      //setMessages([...messages, newMessage]);
 
       insertMessage(newMessage);
 
