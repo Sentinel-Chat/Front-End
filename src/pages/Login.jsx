@@ -30,11 +30,14 @@ const Login = (props) => {
         },
         body: JSON.stringify(loginInfo), // Convert object to JSON string
       });
+
+      alert(response.body);
       if (response.ok) {
         const data = await response.json();
         console.log(data);
         // Check if the response contains account information
         if (data.account == null) {
+          alert(data.account);
           // Check if the entered password matches the password from the database
           if (loginInfo.password === data.password) {
             // Passwords match, navigate to the inbox page
