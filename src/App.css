@@ -88,13 +88,13 @@ a:any-link:hover {
     transition: 0.4s;
 }
 
-.login-link:hover {
+/* .login-link:hover {
     color: black;
     padding: 0.7em;
     border-radius: 10px;
     background-color: #859c40;
     cursor: pointer;
-}
+} */
 
 span {
     color: red;
