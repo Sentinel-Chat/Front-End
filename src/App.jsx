@@ -2,20 +2,41 @@ import React from "react";
 import "./App.css";
 import { useState, useEffect } from "react";
 
-import { Link, useRoutes } from "react-router-dom";
+import { Link, useRoutes, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Inbox from "./pages/Inbox";
 
+import forge from "node-forge";
+
 import { ENDPOINT } from "./config.js";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
+  const [rsaKeyPair, setRsaKeyPair] = useState({
+    publicKey: "",
+    privateKey: "",
+  });
+
+  const navigate = useNavigate();
 
   // establish connection to server
   useEffect(() => {
+    // Generate RSA key pair when component mounts
+    const generateRsaKeyPair = async () => {
+      const rsa = forge.pki.rsa;
+      const keyPair = rsa.generateKeyPair({ bits: 2048, e: 65537 });
+      const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
+      const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
+
+      console.log("Private Key:", privateKeyPem);
+      console.log("Public Key:", publicKeyPem);
+      setRsaKeyPair({ privateKey: privateKeyPem, publicKey: publicKeyPem });
+    };
+
+    generateRsaKeyPair();
     const socket = socketIOClient(ENDPOINT);
     console.log("Socket connected:", socket);
     setSocket(socket);
@@ -28,6 +49,11 @@ const App = () => {
     };
   }, []);
 
+  //   // Use the rsaKeyPair state within a separate useEffect hook
+  //   useEffect(() => {
+  //     console.log("RSA Key Pair:", rsaKeyPair);
+  //   }, [rsaKeyPair]);
+
   // Use to check if user logged in or not
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -35,15 +61,125 @@ const App = () => {
   const [loggedInUser, setLoggedInUser] = useState({
     username: "",
     password: "",
+    sessionKey: "",
   });
+
+  const decryptSessionKey = (encryptedSessionKey, privateKeyPem) => {
+    try {
+      const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+
+      console.log(encryptedSessionKey);
+
+      // Decrypt the encrypted session key using the private key
+      const decryptedSessionKey = privateKey.decrypt(
+        encryptedSessionKey,
+        "RSA-OAEP",
+        {
+          md: forge.md.sha256.create(),
+          mgf1: {
+            md: forge.md.sha256.create(),
+          },
+        }
+      );
+
+      // Return the decrypted session key
+      return decryptedSessionKey;
+    } catch (error) {
+      console.error("Error decrypting session key:", error);
+      return null;
+    }
+  };
+
+  const decodeSessionKey = (sessionKey) => {
+    try {
+      // Decode the Base64-encoded session key
+      const decodedSessionKey = atob(sessionKey);
+
+      // Return the decoded session key
+      return decodedSessionKey;
+    } catch (error) {
+      console.error("Error decoding session key:", error);
+      return null;
+    }
+  };
+
+  const loginUser = async (loginInfo) => {
+    const handshake = {
+      username: loginInfo.username,
+      password: loginInfo.password,
+      userPublicKey: rsaKeyPair.publicKey,
+    };
+
+    console.log("Public Key:", rsaKeyPair.publicKey);
+
+    // try {
+    const response = await fetch(`${ENDPOINT}/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(handshake), // Convert object to JSON string
+    });
+
+    //   console.log(response.body);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.sessionKey);
+      // Check if the response contains account information
+      if (data.account == null) {
+        //   console.log(data.account);
+        // Check if the entered password matches the password from the database
+        if (loginInfo.password === data.password) {
+          // Passwords match, navigate to the inbox page
+          // call manageSession() function from App.jsx
+          // console.log("works until here");
+
+          // Use the updated functions to decrypt the session key
+          const decryptedSessionKey = decryptSessionKey(
+            decodeSessionKey(data.sessionKey),
+            rsaKeyPair.privateKey
+          );
+          console.log(decryptedSessionKey);
+
+          const fetchedData = {
+            username: data.username,
+            password: data.password,
+            sessionKey: decryptedSessionKey,
+          };
+
+          //   console.log("works until here");
+
+          manageSession(fetchedData);
+
+          navigate("/Inbox");
+        } else {
+          // Passwords don't match
+          alert("Incorrect password.");
+        }
+      } else {
+        // Account not found
+        alert("Account not found.");
+      }
+    } else {
+      // Server error
+      alert("Error retrieving account. Please try again later.");
+    }
+    // } catch (error) {
+    //   //   console.log("Error creating account:", error);
+    //   alert("SOMETHING STUPID HAPPENED");
+    // }
+  };
 
   // Login user
   const manageSession = (data) => {
     // Login/Signout user
     setAuthenticated(!authenticated);
 
-    // Set logged in user data passed from Login.jsx
-    setLoggedInUser(data);
+    // setLoggedInUser({
+    //   username: data.username,
+    //   password: data.password,
+    //   sessionKey: sessionKeyRSA,
+    // });
 
     if (!authenticated && socket) {
       socket.emit("login", data);
@@ -65,6 +201,7 @@ const App = () => {
     setLoggedInUser({
       username: "",
       password: "",
+      sessionKey: "",
     });
   };
 
@@ -113,7 +250,7 @@ const App = () => {
     {
       path: "/",
       // pass manageSession as prop so it can be used in Login.jsx
-      element: <Login loginUser={manageSession} />,
+      element: <Login loginUser={loginUser} rsaKeyPair={rsaKeyPair} />,
     },
     {
       path: "/signup",
