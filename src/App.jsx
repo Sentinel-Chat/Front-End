@@ -103,6 +103,19 @@ const App = () => {
     }
   };
 
+  const encodeSessionKey = (sessionKey) => {
+    try {
+      // Encode the session key to Base64
+      const encodedSessionKey = btoa(sessionKey);
+
+      // Return the encoded session key
+      return encodedSessionKey;
+    } catch (error) {
+      console.error("Error encoding session key:", error);
+      return null;
+    }
+  };
+
   const loginUser = async (loginInfo) => {
     const handshake = {
       username: loginInfo.username,
@@ -139,7 +152,7 @@ const App = () => {
             decodeSessionKey(data.sessionKey),
             rsaKeyPair.privateKey
           );
-          console.log(decryptedSessionKey);
+          console.log(encodeSessionKey(decryptedSessionKey));
 
           const fetchedData = {
             username: data.username,
@@ -175,11 +188,11 @@ const App = () => {
     // Login/Signout user
     setAuthenticated(!authenticated);
 
-    // setLoggedInUser({
-    //   username: data.username,
-    //   password: data.password,
-    //   sessionKey: sessionKeyRSA,
-    // });
+    setLoggedInUser({
+      username: data.username,
+      password: data.password,
+      sessionKey: data.sessionKey,
+    });
 
     if (!authenticated && socket) {
       socket.emit("login", data);

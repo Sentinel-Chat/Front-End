@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import { ENDPOINT } from "../config.js";
+// import { ENDPOINT } from "../config.js";
 
 const Login = (props) => {
   // User Login information
   const [loginInfo, setLoginInfo] = useState({
     username: "",
     password: "",
+    encryptedSessionKey: "",
   });
-  const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   // Login User and bring user to inbox page
-  const handleLogin = async (event) => {
+  const handleLogin = (event) => {
     event.preventDefault();
 
     // Validate that id and password are not empty
@@ -22,49 +23,7 @@ const Login = (props) => {
       return;
     }
 
-    try {
-      const response = await fetch(`${ENDPOINT}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(loginInfo), // Convert object to JSON string
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Check if the response contains account information
-        if (data.username != null) {
-          // Check if the entered password matches the password from the database
-          if (loginInfo.password === data.password) {
-            // Passwords match, navigate to the inbox page
-            // call manageSession() function from App.jsx
-            console.log("works until here");
-
-            const fetchedData = {
-              username: data.username,
-              password: data.password,
-            };
-
-            props.loginUser(fetchedData);
-
-            navigate("/Inbox");
-          } else {
-            // Passwords don't match
-            alert("Incorrect password.");
-          }
-        } else {
-          // Account not found
-          alert("Account not found.");
-        }
-      } else {
-        // Server error
-        alert("Error retrieving account. Please try again later.");
-      }
-    } catch (error) {
-      //   console.log("Error creating account:", error);
-      alert("Error retrieving account. Please try again later.");
-    }
+    props.loginUser(loginInfo);
   };
 
   // Stores form data when user inputs data
