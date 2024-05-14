@@ -197,6 +197,22 @@ const Inbox = (props) => {
     setMessageInput(input);
   };
 
+  // Remove PKCS7 padding from the decrypted message
+  function removePadding(decryptedMessage) {
+    // Get the last byte, which indicates the number of padding bytes
+    const paddingLength = decryptedMessage.charCodeAt(
+      decryptedMessage.length - 1
+    );
+
+    // Check if the padding length is valid
+    if (paddingLength < 1 || paddingLength > 16) {
+      throw new Error("Invalid padding length");
+    }
+
+    // Remove the padding bytes
+    return decryptedMessage.slice(0, -paddingLength);
+  }
+
   // Replace SERVER_IP with server ip
   useEffect(() => {
     const newSocket = io(`${ENDPOINT}`);
@@ -204,7 +220,34 @@ const Inbox = (props) => {
 
     newSocket.on("message", (message) => {
       console.log(message);
-      setMessages((prevMessages) => [...prevMessages, message]);
+
+      // Decode the received data
+      const iv = forge.util.decode64(message.iv);
+      const authTag = forge.util.decode64(message.authTag);
+      const encryptedMessage = forge.util.decode64(message.encryptedMessage);
+
+      // Decrypt the message
+      const decipher = forge.cipher.createDecipher(
+        "AES-GCM",
+        props.user.sessionKey
+      );
+      decipher.start({
+        iv,
+        tag: authTag,
+      });
+      decipher.update(forge.util.createBuffer(encryptedMessage));
+      if (!decipher.finish()) {
+        throw new Error("Failed to decrypt the message");
+      }
+      const decryptedMessage = decipher.output.data;
+
+      // Parse the decrypted message string into a JavaScript object
+      const decryptedMessageObj = JSON.parse(removePadding(decryptedMessage));
+
+      // Handle the decrypted message object
+      console.log(decryptedMessageObj);
+
+      setMessages((prevMessages) => [...prevMessages, decryptedMessageObj]);
     });
 
     return () => {
@@ -219,7 +262,7 @@ const Inbox = (props) => {
       const iv = forge.random.getBytesSync(12); // 96-bit IV for GCM mode
       const ivBase64 = forge.util.encode64(iv); // Encode IV in base64
 
-      console.log(sessionKey);
+      //   console.log(sessionKey);
 
       const cipher = forge.cipher.createCipher("AES-GCM", sessionKey);
       cipher.start({ iv: iv });
@@ -280,7 +323,7 @@ const Inbox = (props) => {
           });
         }
 
-        insertMessage(newMessage);
+        // insertMessage(newMessage);
 
         setMessageInput("");
         document.querySelector(".compose-input").value = "";
@@ -293,29 +336,29 @@ const Inbox = (props) => {
     }
   };
 
-  const insertMessage = async (newMessage) => {
-    // URL of the Flask endpoint that inserts a new message
-    const url = `${ENDPOINT}/api/insert_message`;
+  //   const insertMessage = async (newMessage) => {
+  //     // URL of the Flask endpoint that inserts a new message
+  //     const url = `${ENDPOINT}/api/insert_message`;
 
-    try {
-      // Make the POST request to the Flask server
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMessage),
-      });
+  //     try {
+  //       // Make the POST request to the Flask server
+  //       const response = await fetch(url, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(newMessage),
+  //       });
 
-      if (response.ok) {
-        console.log("Message inserted successfully.");
-      } else {
-        console.error("Failed to insert message.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
+  //       if (response.ok) {
+  //         console.log("Message inserted successfully.");
+  //       } else {
+  //         console.error("Failed to insert message.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   };
 
   // Function to handle click on dm-listing div
   const handleChatroomClick = async (chatroomId) => {
@@ -372,7 +415,7 @@ const Inbox = (props) => {
             <Message
               key={index}
               text={message.text}
-              type={message.sender === props.user.username ? "mine" : "other"}
+              type={message.sender == props.user.username ? "mine" : "other"}
               position={"last"}
               timestamp={message.created_at}
               sender={message.sender}
