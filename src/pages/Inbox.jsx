@@ -6,6 +6,8 @@ import io from "socket.io-client";
 import { useEffect, useState, useRef } from "react";
 // import { Link } from "react-router-dom";
 
+import { useNavigate } from "react-router-dom";
+
 // import profile_pic from "../images/icon.jpeg";
 
 import { ENDPOINT } from "../config.js";
@@ -39,8 +41,15 @@ const Inbox = (props) => {
   //State to store socket instance
   const [socket, setSocket] = useState(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log("useEffect triggered");
+
+    if (props.user.username === "" || props.user.username === null) {
+      navigate("/");
+    }
+
     if (messageEl) {
       messageEl.current.addEventListener("DOMNodeInserted", (event) => {
         const { currentTarget: target } = event;
@@ -194,6 +203,7 @@ const Inbox = (props) => {
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
+      console.log(message);
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -202,46 +212,32 @@ const Inbox = (props) => {
     };
   }, []);
 
-  // Function to encrypt the new message object using the session key
   const encryptNewMessage = async (newMessage, sessionKey) => {
     try {
-      // Serialize the newMessage object into a JSON string
       const messageJson = JSON.stringify(newMessage);
-
-      // Convert the message to bytes
       const messageBytes = forge.util.encodeUtf8(messageJson);
-
-      // Generate a random Initialization Vector (IV)
       const iv = forge.random.getBytesSync(12); // 96-bit IV for GCM mode
+      const ivBase64 = forge.util.encode64(iv); // Encode IV in base64
 
-      // Convert the IV to a binary buffer
-      const ivBuffer = new TextEncoder().encode(iv).buffer;
+      console.log(sessionKey);
 
-      // Create a new AES-GCM cipher with the session key and IV
       const cipher = forge.cipher.createCipher("AES-GCM", sessionKey);
-      cipher.start({ iv: ivBuffer });
+      cipher.start({ iv: iv });
 
-      // Update the cipher with the message bytes
       cipher.update(forge.util.createBuffer(messageBytes));
-
-      // Finish the encryption process
       cipher.finish();
 
-      // Get the encrypted message bytes and authentication tag
       const encryptedBytes = cipher.output.getBytes();
       const authTag = cipher.mode.tag.getBytes();
 
-      // Convert the encrypted message and authentication tag to hex strings
-      const encryptedHex = forge.util.bytesToHex(encryptedBytes);
-      const authTagHex = forge.util.bytesToHex(authTag);
-
-      // Encode IV in base64
-      const ivBase64 = forge.util.encode64(iv);
+      // Encode encrypted message, IV, and auth tag in base64
+      const encryptedMessageBase64 = forge.util.encode64(encryptedBytes);
+      const authTagBase64 = forge.util.encode64(authTag);
 
       return {
-        encryptedMessage: encryptedHex,
+        encryptedMessage: encryptedMessageBase64,
         iv: ivBase64,
-        authTagHex: authTagHex,
+        authTag: authTagBase64,
       };
     } catch (error) {
       console.error("Encryption error:", error);
@@ -275,18 +271,12 @@ const Inbox = (props) => {
           decryptedSessionKey
         );
 
-        // Encode IV and encrypted message in base64
-        const ivBase64 = forge.util.encode64(encryptedMessage.iv);
-        const encryptedMessageBase64 = forge.util.encode64(
-          forge.util.hexToBytes(encryptedMessage.encryptedMessage)
-        );
-
         if (socket) {
           socket.emit("message", {
             sender: props.user.username,
-            encryptedMessage: encryptedMessageBase64,
-            iv: ivBase64,
-            authTag: encryptedMessage.authTagHex,
+            encryptedMessage: encryptedMessage.encryptedMessage,
+            iv: encryptedMessage.iv,
+            authTag: encryptedMessage.authTag, // Send authTag directly
           });
         }
 
