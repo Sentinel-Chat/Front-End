@@ -68,7 +68,7 @@ const App = () => {
     try {
       const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
 
-      console.log(encryptedSessionKey);
+      //   console.log(encryptedSessionKey);
 
       // Decrypt the encrypted session key using the private key
       const decryptedSessionKey = privateKey.decrypt(
@@ -123,7 +123,7 @@ const App = () => {
       userPublicKey: rsaKeyPair.publicKey,
     };
 
-    console.log("Public Key:", rsaKeyPair.publicKey);
+    // console.log("Public Key:", rsaKeyPair.publicKey);
 
     // try {
     const response = await fetch(`${ENDPOINT}/api/login`, {
@@ -137,7 +137,7 @@ const App = () => {
     //   console.log(response.body);
     if (response.ok) {
       const data = await response.json();
-      console.log(data.sessionKey);
+      //   console.log(data.sessionKey);
       // Check if the response contains account information
       if (data.account == null) {
         //   console.log(data.account);

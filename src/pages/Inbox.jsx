@@ -218,10 +218,10 @@ const Inbox = (props) => {
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
-      console.log("recieved message:");
+      console.log("decrypted message:");
       console.log(message);
 
-      //   // Decode the received data
+      // Decode the received data
       //   const iv = forge.util.decode64(message.iv);
       //   const authTag = forge.util.decode64(message.authTag);
       //   const encryptedMessage = forge.util.decode64(message.encryptedMessage);
@@ -229,7 +229,7 @@ const Inbox = (props) => {
       //   // Decrypt the message
       //   const decipher = forge.cipher.createDecipher(
       //     "AES-GCM",
-      //     props.user.sessionKey
+      //     forge.util.decode64(message.sessionKey)
       //   );
       //   decipher.start({
       //     iv,
