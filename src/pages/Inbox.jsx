@@ -219,35 +219,36 @@ const Inbox = (props) => {
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
+      console.log("recieved message:");
       console.log(message);
 
-      // Decode the received data
-      const iv = forge.util.decode64(message.iv);
-      const authTag = forge.util.decode64(message.authTag);
-      const encryptedMessage = forge.util.decode64(message.encryptedMessage);
+      //   // Decode the received data
+      //   const iv = forge.util.decode64(message.iv);
+      //   const authTag = forge.util.decode64(message.authTag);
+      //   const encryptedMessage = forge.util.decode64(message.encryptedMessage);
 
-      // Decrypt the message
-      const decipher = forge.cipher.createDecipher(
-        "AES-GCM",
-        props.user.sessionKey
-      );
-      decipher.start({
-        iv,
-        tag: authTag,
-      });
-      decipher.update(forge.util.createBuffer(encryptedMessage));
-      if (!decipher.finish()) {
-        throw new Error("Failed to decrypt the message");
-      }
-      const decryptedMessage = decipher.output.data;
+      //   // Decrypt the message
+      //   const decipher = forge.cipher.createDecipher(
+      //     "AES-GCM",
+      //     props.user.sessionKey
+      //   );
+      //   decipher.start({
+      //     iv,
+      //     tag: authTag,
+      //   });
+      //   decipher.update(forge.util.createBuffer(encryptedMessage));
+      //   if (!decipher.finish()) {
+      //     throw new Error("Failed to decrypt the message");
+      //   }
+      //   const decryptedMessage = decipher.output.data;
 
-      // Parse the decrypted message string into a JavaScript object
-      const decryptedMessageObj = JSON.parse(removePadding(decryptedMessage));
+      //   // Parse the decrypted message string into a JavaScript object
+      //   const decryptedMessageObj = JSON.parse(removePadding(decryptedMessage));
 
-      // Handle the decrypted message object
-      console.log(decryptedMessageObj);
+      //   // Handle the decrypted message object
+      //   console.log(decryptedMessageObj);
 
-      setMessages((prevMessages) => [...prevMessages, decryptedMessageObj]);
+      setMessages((prevMessages) => [...prevMessages, message]);
     });
 
     return () => {
