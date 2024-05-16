@@ -167,11 +167,11 @@ const App = () => {
           navigate("/Inbox");
         } else {
           // Passwords don't match
-          alert("Incorrect password.");
+          alert("Incorrect password or Account doesn't exist.");
         }
       } else {
         // Account not found
-        alert("Account not found.");
+        alert("Incorrect password or Account doesn't exist.");
       }
     } else {
       // Server error
