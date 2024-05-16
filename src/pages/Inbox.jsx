@@ -6,12 +6,20 @@ import io from "socket.io-client";
 import { useEffect, useState, useRef } from "react";
 // import { Link } from "react-router-dom";
 
+import { useNavigate } from "react-router-dom";
+
 // import profile_pic from "../images/icon.jpeg";
 
 import { ENDPOINT } from "../config.js";
 
 import Message from "../components/Message";
 import CreateChatroomModal from "../components/CreateChatroomModal";
+
+import forge from "node-forge";
+
+import AES from "aes-js";
+
+import { TextEncoder, TextDecoder } from "text-encoding";
 
 const Inbox = (props) => {
   const messageEl = useRef(null);
@@ -26,15 +34,22 @@ const Inbox = (props) => {
   const [chatroomID, setChatroomID] = useState(1);
 
   // State to store current chatroom
-  const [chatroomData, setChatroomData] = useState(null);
+  //   const [chatroomData, setChatroomData] = useState(null);
 
   const [chatroomList, setChatroomList] = useState(null);
 
   //State to store socket instance
   const [socket, setSocket] = useState(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log("useEffect triggered");
+
+    if (props.user.username === "" || props.user.username === null) {
+      navigate("/");
+    }
+
     if (messageEl) {
       messageEl.current.addEventListener("DOMNodeInserted", (event) => {
         const { currentTarget: target } = event;
@@ -56,10 +71,10 @@ const Inbox = (props) => {
         if (fetchedMessages.messages) {
           // Access the messages array
           const messagesArray = fetchedMessages.messages;
-          console.log("Messages array:", messagesArray);
+          //   console.log("Messages array:", messagesArray);
 
           const uniqueMessages = removeDuplicates(messagesArray, "text");
-          console.log(uniqueMessages);
+          //   console.log(uniqueMessages);
 
           setMessages(uniqueMessages);
         } else {
@@ -69,6 +84,7 @@ const Inbox = (props) => {
       .catch((error) => {
         console.error("Error:", error);
       });
+    // eslint-disable-next-line
   }, []);
 
   function removeDuplicates(array, key) {
@@ -83,25 +99,25 @@ const Inbox = (props) => {
     }, []);
   }
 
-  async function getChatroomById(chatroomId) {
-    // URL of the Flask endpoint that retrieves a chatroom by ID
-    const url = `${ENDPOINT}/api/get_chatroom_by_id`;
+  //   async function getChatroomById(chatroomId) {
+  //     // URL of the Flask endpoint that retrieves a chatroom by ID
+  //     const url = `${ENDPOINT}/api/get_chatroom_by_id`;
 
-    try {
-      // Make the GET request to the Flask server
-      const response = await fetch(url);
-      if (response.ok) {
-        const chatroom = await response.json();
-        // console.log("Chatroom:", chatroom);
-        // Process the retrieved chatroom data as needed
-        return chatroom;
-      } else {
-        console.error("Failed to retrieve chatroom.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
+  //     try {
+  //       // Make the GET request to the Flask server
+  //       const response = await fetch(url);
+  //       if (response.ok) {
+  //         const chatroom = await response.json();
+  //         // console.log("Chatroom:", chatroom);
+  //         // Process the retrieved chatroom data as needed
+  //         return chatroom;
+  //       } else {
+  //         console.error("Failed to retrieve chatroom.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   }
 
   async function getMessagesByChatroomId(chatroomId) {
     // URL of the Flask endpoint that retrieves messages by chatroom ID
@@ -162,7 +178,6 @@ const Inbox = (props) => {
       if (response.ok) {
         // Extract chatrooms from the response data
         const chatrooms = responseData.chatrooms;
-        console.log("Chatrooms:", chatrooms);
         setChatroomList(chatrooms);
         return chatrooms;
       } else {
@@ -181,12 +196,57 @@ const Inbox = (props) => {
     setMessageInput(input);
   };
 
+  // Remove PKCS7 padding from the decrypted message
+  function removePadding(decryptedMessage) {
+    // Get the last byte, which indicates the number of padding bytes
+    const paddingLength = decryptedMessage.charCodeAt(
+      decryptedMessage.length - 1
+    );
+
+    // Check if the padding length is valid
+    if (paddingLength < 1 || paddingLength > 16) {
+      throw new Error("Invalid padding length");
+    }
+
+    // Remove the padding bytes
+    return decryptedMessage.slice(0, -paddingLength);
+  }
+
   // Replace SERVER_IP with server ip
   useEffect(() => {
     const newSocket = io(`${ENDPOINT}`);
     setSocket(newSocket);
 
     newSocket.on("message", (message) => {
+      console.log("decrypted message:");
+      console.log(message);
+
+      // Decode the received data
+      //   const iv = forge.util.decode64(message.iv);
+      //   const authTag = forge.util.decode64(message.authTag);
+      //   const encryptedMessage = forge.util.decode64(message.encryptedMessage);
+
+      //   // Decrypt the message
+      //   const decipher = forge.cipher.createDecipher(
+      //     "AES-GCM",
+      //     forge.util.decode64(message.sessionKey)
+      //   );
+      //   decipher.start({
+      //     iv,
+      //     tag: authTag,
+      //   });
+      //   decipher.update(forge.util.createBuffer(encryptedMessage));
+      //   if (!decipher.finish()) {
+      //     throw new Error("Failed to decrypt the message");
+      //   }
+      //   const decryptedMessage = decipher.output.data;
+
+      //   // Parse the decrypted message string into a JavaScript object
+      //   const decryptedMessageObj = JSON.parse(removePadding(decryptedMessage));
+
+      //   // Handle the decrypted message object
+      //   console.log(decryptedMessageObj);
+
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -195,20 +255,52 @@ const Inbox = (props) => {
     };
   }, []);
 
-  // Stores form data when user inputs data
-  const handleSubmit = async () => {
-    // event.preventDefault();
+  const encryptNewMessage = async (newMessage, sessionKey) => {
+    try {
+      const messageJson = JSON.stringify(newMessage);
+      const messageBytes = forge.util.encodeUtf8(messageJson);
+      const iv = forge.random.getBytesSync(12); // 96-bit IV for GCM mode
+      const ivBase64 = forge.util.encode64(iv); // Encode IV in base64
 
+      //   console.log(sessionKey);
+
+      const cipher = forge.cipher.createCipher("AES-GCM", sessionKey);
+      cipher.start({ iv: iv });
+
+      cipher.update(forge.util.createBuffer(messageBytes));
+      cipher.finish();
+
+      const encryptedBytes = cipher.output.getBytes();
+      const authTag = cipher.mode.tag.getBytes();
+
+      // Encode encrypted message, IV, and auth tag in base64
+      const encryptedMessageBase64 = forge.util.encode64(encryptedBytes);
+      const authTagBase64 = forge.util.encode64(authTag);
+
+      return {
+        encryptedMessage: encryptedMessageBase64,
+        iv: ivBase64,
+        authTag: authTagBase64,
+      };
+    } catch (error) {
+      console.error("Encryption error:", error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async () => {
     if (messageInput.trim() !== "") {
       const createdAt = new Date().toLocaleString([], {
-        weekday: "long", // Display full weekday name (e.g., Monday)
-        year: "numeric", // Display full numeric year (e.g., 2024)
-        month: "long", // Display full month name (e.g., April)
-        day: "numeric", // Display numeric day of the month (e.g., 27)
-        hour: "2-digit", // Display two-digit hour (e.g., 08)
-        minute: "2-digit", // Display two-digit minute (e.g., 05)
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
-      // Create a new message object
+
+      const decryptedSessionKey = props.user.sessionKey;
+
       const newMessage = {
         text: messageInput,
         sender: props.user.username,
@@ -216,54 +308,57 @@ const Inbox = (props) => {
         chat_room_id: chatroomID,
       };
 
-      console.log(props.user);
+      try {
+        const encryptedMessage = await encryptNewMessage(
+          newMessage,
+          decryptedSessionKey
+        );
 
-      // Send messasge to server
-      if (socket) {
-        socket.emit("message", newMessage);
+        if (socket) {
+          socket.emit("message", {
+            sender: props.user.username,
+            encryptedMessage: encryptedMessage.encryptedMessage,
+            iv: encryptedMessage.iv,
+            authTag: encryptedMessage.authTag, // Send authTag directly
+          });
+        }
+
+        // insertMessage(newMessage);
+
+        setMessageInput("");
+        document.querySelector(".compose-input").value = "";
+      } catch (error) {
+        alert("Encryption failed. Please try again.");
+        console.error("Encryption error:", error);
       }
-
-      // Get chatroom id from database (stretch)
-      // inert message into database (stretch goal)
-
-      // Update the messages state with the new message
-      //setMessages([...messages, newMessage]);
-
-      insertMessage(newMessage);
-
-      // Clear the message input
-      setMessageInput("");
-
-      // Clear the input field
-      document.querySelector(".compose-input").value = "";
     } else {
-      alert("Message input isempty.");
+      alert("Message input is empty.");
     }
   };
 
-  const insertMessage = async (newMessage) => {
-    // URL of the Flask endpoint that inserts a new message
-    const url = `${ENDPOINT}/api/insert_message`;
+  //   const insertMessage = async (newMessage) => {
+  //     // URL of the Flask endpoint that inserts a new message
+  //     const url = `${ENDPOINT}/api/insert_message`;
 
-    try {
-      // Make the POST request to the Flask server
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMessage),
-      });
+  //     try {
+  //       // Make the POST request to the Flask server
+  //       const response = await fetch(url, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(newMessage),
+  //       });
 
-      if (response.ok) {
-        console.log("Message inserted successfully.");
-      } else {
-        console.error("Failed to insert message.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
+  //       if (response.ok) {
+  //         console.log("Message inserted successfully.");
+  //       } else {
+  //         console.error("Failed to insert message.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   };
 
   // Function to handle click on dm-listing div
   const handleChatroomClick = async (chatroomId) => {
@@ -306,7 +401,7 @@ const Inbox = (props) => {
               </div>
               <div>
                 <h3 className="dm-name">{chatroom[2]}</h3>
-                <p className="dm-preview">Placeholder preview message</p>
+                {/* <p className="dm-preview">Placeholder preview message</p> */}
               </div>
             </div>
           ))}
