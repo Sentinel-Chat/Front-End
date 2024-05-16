@@ -58,7 +58,7 @@ const SignUp = () => {
       if (response.ok) {
         addUserToChatroom(credentials.username, 1);
         // User created successfully, navigate to login page
-        // navigate("/");
+        navigate("/");
       } else {
         const data = await response.json();
         alert(data.error || "Failed to create user");

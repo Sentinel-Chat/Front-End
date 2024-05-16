@@ -178,7 +178,6 @@ const Inbox = (props) => {
       if (response.ok) {
         // Extract chatrooms from the response data
         const chatrooms = responseData.chatrooms;
-        // console.log("Chatrooms:", chatrooms);
         setChatroomList(chatrooms);
         return chatrooms;
       } else {
@@ -402,7 +401,7 @@ const Inbox = (props) => {
               </div>
               <div>
                 <h3 className="dm-name">{chatroom[2]}</h3>
-                <p className="dm-preview">Placeholder preview message</p>
+                {/* <p className="dm-preview">Placeholder preview message</p> */}
               </div>
             </div>
           ))}

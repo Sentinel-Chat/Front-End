@@ -24,6 +24,8 @@ const App = () => {
 
   // establish connection to server
   useEffect(() => {
+    createChatroomIfNotExists();
+
     // Generate RSA key pair when component mounts
     const generateRsaKeyPair = async () => {
       const rsa = forge.pki.rsa;
@@ -40,8 +42,6 @@ const App = () => {
     const socket = socketIOClient(ENDPOINT);
     console.log("Socket connected:", socket);
     setSocket(socket);
-
-    createChatroomIfNotExists();
 
     return () => {
       socket.disconnect();
@@ -221,6 +221,15 @@ const App = () => {
   async function createChatroomIfNotExists() {
     // URL of the Flask endpoint that handles the creation of chatrooms
     const url = `${ENDPOINT}/api/create_chatroom`;
+
+    // Check if the chatroom with chat_room_id: 1 already exists
+    const existingChatroomResponse = await fetch(
+      `${ENDPOINT}/api/chatrooms/get_chatroom`
+    );
+    if (existingChatroomResponse.ok) {
+      console.log("General Chat already exists.");
+      return; // Exit the function since the chatroom already exists
+    }
 
     // Data to be sent in the request body
     const data = {
